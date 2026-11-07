@@ -43,6 +43,8 @@
   .row + .row{border-top:1px solid var(--border)}
   .row label{font-weight:700;font-size:17px}
   .field{position:relative}
+  .field em{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font:400 15px 'DM Mono',monospace;font-style:normal}
+  .field input{padding-right:52px}
   .field span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-family:'DM Mono',monospace}
   input,textarea{width:100%;background:var(--input);border:1px solid var(--input-border);border-radius:10px;
     color:var(--text);font:500 17px 'DM Mono',monospace;padding:11px 12px 11px 28px;text-align:right;outline:none}
@@ -78,12 +80,12 @@
   <a class="back" id="backBtn" href="#">← Torna alla Home Hub</a>
 
   <header>
-    <h1>Venduto Giorno in Progress</h1>
+    <h1>Venduto Pdv Trony Diego</h1>
     <div class="clock" id="clock"></div>
   </header>
 
   <section class="card">
-    <h2>Inserisci il venduto di ogni PDV</h2>
+    <h2>Venduto in migliaia: scrivi 12 per € 12.000, 12,5 per € 12.500</h2>
     <div id="rows"></div>
     <label class="toggle"><input type="checkbox" id="rank" checked> Ordina il messaggio dal PDV con più venduto</label>
   </section>
@@ -112,18 +114,16 @@
   const HUB_URL = "";
 
   const PDV = ["Fano","Monsano","Osimo","Macerata","Civitanova","Pesaro","Foligno"];
-  const KEY = "dml_venduto_pdv_v1";
+  const KEY = "dml_venduto_pdv_v2";
   const $ = id => document.getElementById(id);
   const eur = n => "€ " + n.toLocaleString("it-IT",{minimumFractionDigits:0,maximumFractionDigits:2});
 
-  // Parse formato italiano: "12.340,50" / "12340" / "12340.5"
+  // Inserimento in MIGLIAIA: "12" = € 12.000 · "12,5" = € 12.500 · "8,75" = € 8.750
   function parse(v){
-    v = String(v||"").trim().replace(/[€\s]/g,"");
+    v = String(v||"").trim().replace(/[€\s]/g,"").replace(",",".");
     if(!v) return null;
-    if(v.includes(",")) v = v.replace(/\./g,"").replace(",",".");
-    else if((v.match(/\./g)||[]).length>1 || /\.\d{3}$/.test(v)) v = v.replace(/\./g,"");
     const n = parseFloat(v);
-    return isNaN(n) ? null : n;
+    return isNaN(n) ? null : Math.round(n*1000);
   }
 
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){ return {}; } }
@@ -133,7 +133,7 @@
   $("rows").innerHTML = PDV.map(p => `
     <div class="row">
       <label for="v_${p}">${p}</label>
-      <div class="field"><span>€</span>
+      <div class="field"><span>€</span><em>mila</em>
         <input id="v_${p}" inputmode="decimal" autocomplete="off" placeholder="0" value="${saved[p]??""}">
       </div>
     </div>`).join("");
