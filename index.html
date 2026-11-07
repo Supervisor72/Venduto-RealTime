@@ -49,10 +49,6 @@
   textarea{font:400 15px 'DM Sans',sans-serif;text-align:left;padding:11px 12px;resize:vertical;min-height:60px}
   input:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(232,184,75,.18)}
 
-  .total{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding-top:12px;
-    border-top:2px solid var(--gold3)}
-  .total b{font-size:16px}
-  .total strong{font-family:'DM Mono',monospace;font-size:24px;color:var(--gold)}
 
   .toggle{display:flex;align-items:center;gap:10px;margin-top:12px;color:var(--muted);font-size:15px;cursor:pointer}
   .toggle input{width:20px;height:20px;accent-color:var(--gold);padding:0}
@@ -89,7 +85,6 @@
   <section class="card">
     <h2>Inserisci il venduto di ogni PDV</h2>
     <div id="rows"></div>
-    <div class="total"><b>Totale</b><strong id="tot">€ 0</strong></div>
     <label class="toggle"><input type="checkbox" id="rank" checked> Ordina il messaggio dal PDV con più venduto</label>
   </section>
 
@@ -155,7 +150,6 @@
   function buildMessage(){
     const {data, ora} = nowParts();
     let list = PDV.map(p => ({p, v: parse($("v_"+p).value)}));
-    const tot = list.reduce((s,x)=> s + (x.v||0), 0);
     if($("rank").checked){
       list = list.slice().sort((a,b)=> (b.v??-1)-(a.v??-1));
     }
@@ -166,15 +160,14 @@
       const m = $("rank").checked ? (medals[i++] || "▪️") : "▪️";
       return `${m} ${x.p}: ${eur(x.v)}`;
     });
-    let msg = `📊 VENDUTO PDV TRONY DIEGO\n📅 ${data.charAt(0).toUpperCase()+data.slice(1)} · 🕒 ore ${ora}\n\n${lines.join("\n")}\n\n💰 TOTALE: ${eur(tot)}`;
+    let msg = `📊 VENDUTO PDV TRONY DIEGO\n📅 ${data.charAt(0).toUpperCase()+data.slice(1)} · 🕒 ore ${ora}\n\n${lines.join("\n")}`;
     const note = $("note").value.trim();
     if(note) msg += `\n\n📝 ${note}`;
-    return {msg, tot};
+    return {msg};
   }
 
   function refresh(){
-    const {msg, tot} = buildMessage();
-    $("tot").textContent = eur(tot);
+    const {msg} = buildMessage();
     $("preview").textContent = msg;
     const d = {}; PDV.forEach(p => d[p] = $("v_"+p).value);
     d._note = $("note").value; d._rank = $("rank").checked;
